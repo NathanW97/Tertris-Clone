@@ -8,8 +8,10 @@ public class Board : MonoBehaviour
 {
     public Tilemap tilemap { get; private set; }
     public Piece activePiece { get; private set; }
+    public Piece nextPiece { get; private set; }
     public TetrominoData[] tetrominos;
     public Vector3Int spawnPosition;
+    public Vector3Int nextspawnPosition;
     public Vector2Int boardSize = new Vector2Int(10, 20);
 
     public RectInt Bounds
@@ -25,9 +27,14 @@ public class Board : MonoBehaviour
     {
         tilemap = GetComponentInChildren<Tilemap>();
         activePiece = GetComponentInChildren<Piece>();
+        nextPiece = GetComponentInChildren<Piece>();
         for (int i = 0; i < tetrominos.Length; i++) {  
             tetrominos[i].Initialize();
         }
+        // Setup the next piece ready to be used on the board
+        int random = Random.Range(0, tetrominos.Length);
+        TetrominoData data = tetrominos[random];
+        nextPiece.Initialize(this, nextspawnPosition, data);
     }
 
     private void Start()
