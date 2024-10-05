@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEditor.ShaderKeywordFilter;
 using UnityEngine;
 using UnityEngine.Tilemaps;
+using static UnityEngine.Rendering.DebugUI.Table;
 
 public class Board : MonoBehaviour
 {
@@ -90,5 +91,63 @@ public class Board : MonoBehaviour
             }
         }
         return true;
+    }
+
+    public void ClearLines()
+    {
+        RectInt bounds = Bounds;
+        int row = bounds.yMin;
+
+        // Step through each row until board is cleared
+        while (row < bounds.yMax)
+        {
+            if (IsLineFull(row))
+            {
+                LineClear(row);
+            } 
+            else 
+            {
+                row++;   
+            }
+        }
+    }
+
+    private bool IsLineFull(int row)
+    {
+        RectInt bounds = Bounds;
+
+        for (int col = bounds.xMin; col < bounds.xMax; col++)
+        { 
+            Vector3Int position = new Vector3Int(col, row, 0);
+
+            if (!tilemap.HasTile(position))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void LineClear(int row)
+    {
+        RectInt bounds = Bounds;
+
+        for (int col = bounds.xMin; col < bounds.xMax; col++)
+        {
+            Vector3Int position = new Vector3Int(col, row, 0);
+            tilemap.SetTile(position, null);
+        }
+        while (row < bounds.yMax)
+        {
+            for (int col = bounds.xMin; col < bounds.xMax; col++)
+            {
+                Vector3Int position = new Vector3Int(col, row + 1, 0);
+                TileBase above = tilemap.GetTile(position);
+
+                position = new Vector3Int(col, row, 0);
+                tilemap.SetTile(position, above);
+            }
+            row++;
+        }
     }
 }

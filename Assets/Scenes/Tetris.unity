@@ -881,6 +881,7 @@ MonoBehaviour:
   - tetromino: 6
     tile: {fileID: 11400000, guid: 10f5b618690630248908a04a4fd0daa2, type: 2}
   spawnPosition: {x: -1, y: 8, z: 0}
+  nextspawnPosition: {x: 8, y: 6, z: 0}
   boardSize: {x: 10, y: 20}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
