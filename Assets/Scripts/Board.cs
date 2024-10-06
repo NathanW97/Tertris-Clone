@@ -9,11 +9,13 @@ public class Board : MonoBehaviour
 {
     public Tilemap tilemap { get; private set; }
     public Piece activePiece { get; private set; }
-    public Piece nextPiece { get; private set; }
+    public NextPiece nextactivePiece { get; private set; }
     public TetrominoData[] tetrominos;
     public Vector3Int spawnPosition;
     public Vector3Int nextspawnPosition;
     public Vector2Int boardSize = new Vector2Int(10, 20);
+    public int nextPieceID = 0;
+    public int score = 0;
 
     public RectInt Bounds
     {
@@ -28,28 +30,34 @@ public class Board : MonoBehaviour
     {
         tilemap = GetComponentInChildren<Tilemap>();
         activePiece = GetComponentInChildren<Piece>();
-        nextPiece = GetComponentInChildren<Piece>();
+        nextactivePiece = GetComponentInChildren<NextPiece>();
         for (int i = 0; i < tetrominos.Length; i++) {  
             tetrominos[i].Initialize();
         }
         // Setup the next piece ready to be used on the board
-        int random = Random.Range(0, tetrominos.Length);
-        TetrominoData data = tetrominos[random];
-        nextPiece.Initialize(this, nextspawnPosition, data);
+        nextPieceID = Random.Range(0, tetrominos.Length);
+        TetrominoData data = tetrominos[nextPieceID];
+        nextactivePiece.Initialize(this, nextspawnPosition, data);
     }
 
     private void Start()
     {
+
+        SetNext(nextactivePiece);
+
         SpawnPiece();
     }
 
     public void SpawnPiece()
-    { 
-        int random = Random.Range(0,tetrominos.Length);
-        TetrominoData data = tetrominos[random];
+    {
+        // Clear Next Piece
+        ClearNext(nextactivePiece);
 
+       // Set Next Piece to be current Piece
+        TetrominoData data = tetrominos[nextPieceID];
         activePiece.Initialize(this, spawnPosition, data);
 
+        // Check if spawn location is valid
         if (IsValidPosition(activePiece, spawnPosition))
         {
             Set(activePiece);
@@ -58,6 +66,14 @@ public class Board : MonoBehaviour
         {
             GameOver();
         }
+
+        // select next Piece and save ID
+        nextPieceID = Random.Range(0, tetrominos.Length);
+        data = tetrominos[nextPieceID];
+        nextactivePiece.Initialize(this, nextspawnPosition, data);
+
+        // set the next Piece to be visible
+        SetNext(nextactivePiece);
     }
 
     private void GameOver()
@@ -75,7 +91,25 @@ public class Board : MonoBehaviour
         }
     }
 
+    public void SetNext(NextPiece piece)
+    {
+        for (int i = 0; i < piece.cells.Length; i++)
+        {
+            Vector3Int tilePosition = piece.cells[i] + piece.position;
+            tilemap.SetTile(tilePosition, piece.data.tile);
+        }
+    }
+
     public void Clear(Piece piece)
+    {
+        for (int i = 0; i < piece.cells.Length; i++)
+        {
+            Vector3Int tilePosition = piece.cells[i] + piece.position;
+            tilemap.SetTile(tilePosition, null);
+        }
+    }
+
+    public void ClearNext(NextPiece piece)
     {
         for (int i = 0; i < piece.cells.Length; i++)
         {
@@ -111,6 +145,7 @@ public class Board : MonoBehaviour
     {
         RectInt bounds = Bounds;
         int row = bounds.yMin;
+        int scoreCount = 0;
 
         // Step through each row until board is cleared
         while (row < bounds.yMax)
@@ -118,12 +153,15 @@ public class Board : MonoBehaviour
             if (IsLineFull(row))
             {
                 LineClear(row);
+                scoreCount++;
             } 
             else 
             {
                 row++;   
             }
         }
+
+        score += scoreCount;
     }
 
     private bool IsLineFull(int row)
