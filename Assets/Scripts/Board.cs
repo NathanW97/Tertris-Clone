@@ -3,11 +3,14 @@ using System.Collections.Generic;
 using UnityEditor.ShaderKeywordFilter;
 using UnityEngine;
 using UnityEngine.Tilemaps;
+using UnityEngine.UI;
+using TMPro;
 using static UnityEngine.Rendering.DebugUI.Table;
 
 public class Board : MonoBehaviour
 {
     public Tilemap tilemap { get; private set; }
+    public GameManager gameManager;
     public Piece activePiece { get; private set; }
     public NextPiece nextactivePiece { get; private set; }
     public TetrominoData[] tetrominos;
@@ -16,6 +19,13 @@ public class Board : MonoBehaviour
     public Vector2Int boardSize = new Vector2Int(10, 20);
     public int nextPieceID = 0;
     public int score = 0;
+    public int hiScore = 0;
+
+    //Hi and current scoring text
+    //public Text scoreText;
+    //public Text hiScoreText;
+    //[SerializeField] private TextMeshProUGUI scoreText;
+    //[SerializeField] private TextMeshProUGUI hiScoreText;
 
     public RectInt Bounds
     {
@@ -31,6 +41,8 @@ public class Board : MonoBehaviour
         tilemap = GetComponentInChildren<Tilemap>();
         activePiece = GetComponentInChildren<Piece>();
         nextactivePiece = GetComponentInChildren<NextPiece>();
+        //gameManager = GetComponentInChildren<GameManager>();
+
         for (int i = 0; i < tetrominos.Length; i++) {  
             tetrominos[i].Initialize();
         }
@@ -44,6 +56,11 @@ public class Board : MonoBehaviour
     {
 
         SetNext(nextactivePiece);
+
+        // Clear and set score on screen
+        //score = 0;
+        //scoreText.text = score.ToString();
+        //hiScoreText.text = "Hi Score: " + hiScore.ToString();
 
         SpawnPiece();
     }
@@ -160,8 +177,15 @@ public class Board : MonoBehaviour
                 row++;   
             }
         }
-
-        score += scoreCount;
+        // send lines cleared to game manager for scoring
+        gameManager.CalclineScore(scoreCount);
+        //score += gameManager.CalclineScore(scoreCount);
+        //scoreText.text = score.ToString();
+        //if (score > hiScore)
+        //{
+        //    hiScore = score;
+        //    hiScoreText.text = "Hi Score: " + hiScore.ToString();
+        //}
     }
 
     private bool IsLineFull(int row)
